@@ -4,7 +4,7 @@ from multiprocessing import Process
 
 def main():
     while True:
-        mode = int(input('Choose an action:\n1 | Chat\n2 | Exit\n'))
+        mode = 1
         if mode == 1:
             chat()
         elif mode == 2:
@@ -14,7 +14,7 @@ def main():
 
 
 def chat():
-    ip = input("Enter an IP address to connect to: ")
+    ip = '106.201.123.139'
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("", port))
     print("punching")
