@@ -37,7 +37,6 @@
 
 import socket
 import selectors
-import publicip
 
 BUFSIZ = 4096
 
@@ -46,7 +45,6 @@ selfPort = 16384
 
 ip_table = { }
 req_table = { }
-print(publicip.get())
 print(selfIp)
 #socketManager = selectors.DefaultSelector(  )
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
