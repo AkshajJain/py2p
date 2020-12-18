@@ -60,6 +60,4 @@ else:
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
 while True:
-    print(publicip)
-    print(selfIp)
     listener.listen(1024)
