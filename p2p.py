@@ -37,6 +37,7 @@
 
 import socket
 import selectors
+import publicip
 
 BUFSIZ = 4096
 
@@ -50,5 +51,6 @@ req_table = { }
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
 while True:
+    print(publicip.get())
     print(selfIp)
     listener.listen(1024)
