@@ -45,9 +45,10 @@ selfPort = 16384
 
 ip_table = { }
 req_table = { }
-print(selfIp)
+
 #socketManager = selectors.DefaultSelector(  )
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
 while True:
+    print(selfIp)
     listener.listen(1024)
