@@ -37,7 +37,7 @@
 
 import socket
 import selectors
-import publicip
+import requests
 
 BUFSIZ = 4096
 
@@ -47,10 +47,19 @@ selfPort = 16384
 ip_table = { }
 req_table = { }
 
+endpoint = 'https://ipinfo.io/json'
+response = requests.get(endpoint, verify = True)
+publicip = None
+if response.status_code != 200:
+    print('Status:', response.status_code, 'Problem with the request. Exiting.')
+else:
+    data = response.json()
+    publicip = data['ip']
+
 #socketManager = selectors.DefaultSelector(  )
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
 while True:
-    print(publicip.get())
+    print(publicip)
     print(selfIp)
     listener.listen(1024)
