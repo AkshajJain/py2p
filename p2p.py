@@ -36,7 +36,7 @@
 # for each targetUID in people in the chatroom
 
 import socket
-import selectors
+import selectors, requests
 
 BUFSIZ = 4096
 
@@ -51,4 +51,5 @@ req_table = { }
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
 while True:
+    print(requests.get('https://ident.me/').text)
     listener.listen(1024)
