@@ -49,5 +49,5 @@ req_table = { }
 #socketManager = selectors.DefaultSelector(  )
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("0.0.0.0", selfPort))
-listener.listen()
-listener.recv(1024)
+while True:
+    listener.listen()
