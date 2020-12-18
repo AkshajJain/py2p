@@ -47,6 +47,6 @@ ip_table = { }
 req_table = { }
 
 #socketManager = selectors.DefaultSelector(  )
-listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_DGRAM )
+listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
 listener.bind(("", selfPort))
-listener.recvfrom(1024)
+listener.listen()
