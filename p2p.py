@@ -48,7 +48,7 @@ req_table = { }
 
 #socketManager = selectors.DefaultSelector(  )
 listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
-listener.bind(("", selfPort))
+listener.bind((selfIp, selfPort))
 listener.settimeout(0.1)
 listener.listen()
 
@@ -74,7 +74,7 @@ def acc(sock):
 def read(sock):
     global ip_table, req_table
     msg, addr = sock.recvfrom(BUFSIZ)
-    if addr:
+    if msg or addr:
         print('msg:', msg)
         print('addr:', addr)
     if msg and addr and (len(msg.decode().split(';'))) >= 2:
@@ -150,12 +150,6 @@ def read(sock):
 socketManager.register(listener, selectors.EVENT_READ, acc)
 
 def networking( ):
-    global whitelisted_ips
-    for ip in whitelisted_ips:
-        try:
-            listener.connect((ip, selfPort))
-        except Exception as e:
-            pass
     for key in req_table:
         if(not (ip_table.get(key, None) is None)):
             for query in req_table[key]:
