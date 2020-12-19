@@ -58,7 +58,6 @@ whitelisted_ips = ["106.201.123.139", "106.200.238.248", "49.207.201.183", "49.3
 listener.setblocking(False)
 
 socketManager = selectors.DefaultSelector()
-socketManager.register(listener, selectors.EVENT_READ, acc)
 
 print('I am', (selfIp, selfPort))
 
@@ -146,6 +145,7 @@ def read(sock):
                 req_table[target] = []
             req_table[target].append(['addper', name, toAdd])
 
+socketManager.register(listener, selectors.EVENT_READ, acc)
 
 def networking( ):
     global whitelisted_ips
