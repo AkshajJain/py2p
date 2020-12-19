@@ -65,16 +65,18 @@ print('I am', (selfIp, selfPort))
 def acc(sock):
     global ip_table, req_table
     conn, addr = sock.accept()
-    print("conn:", conn)
-    print("addr:", addr)
+    if addr:
+        print("conn:", conn)
+        print("addr:", addr)
     conn.setblocking(False)
     socketManager.register(conn, selectors.EVENT_READ, read)
 
 def read(sock):
     global ip_table, req_table
     msg, addr = sock.recvfrom(BUFSIZ)
-    print('msg:', msg)
-    print('addr:', addr)
+    if addr:
+        print('msg:', msg)
+        print('addr:', addr)
     if msg:
         msg = (msg.decode()).split(';')
 
