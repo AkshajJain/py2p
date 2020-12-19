@@ -1,181 +1,68 @@
+import sys, selectors, socket
 
-# ! main loop query format
-# Create a chatroom
-# 'create';chatroomname;[list of people's UIDs]
+logger = sys.stdout
 
-# Remove a person from a chatroom
-# 'add';chatroomname;toremoveUID
+class stdout_():
 
-# Add a person to a chatroom
-# 'add';chatroomname;newpersonUID
+    def __init__(self, sock):
+        self.flag = False
+        self.sock = sock
 
-# Add a msg to a chatroom
-# todo todo
+    def write(self, mes):
+        self.flag = True
+        self.sock.send(mes.encode("UTF8"))
 
-# ! Server client query format
-# Client tells server he is online
-# UID;online
+class myClient:
 
-# Client tells server he is offline
-# UID;ofline
+    def __init__(self, socket):
+        self.sock = socket
+        self.msg = b""
 
-# Client tells server to create a chatroom
-# UID;create;targetUID;chatroomname;[; seperated UIDs of members]
-# for each targetUID in list of UIDs
+    def sendMsg(self):
 
-# Client tells server to remove themselves from a chatroom
-# UID;remove;targetUID;chatroomname
-# for each targetUID in list of UIDs
+        old, sys.stdout = sys.stdout, stdout_(self.sock)
+        exec(self.msg.decode(), globals())
+        if(not sys.stdout.flag): print('\n', end='')
+        self.clearMsg()
+        sys.stdout = old
 
-# Client tells server to add a person to a chatroom
-# UID;addper;targetUID;chatroomname;newpersonUID
-# for each targetUID in people in the chatroom
+    def clearMsg(self):
+        self.msg = b""
 
-# Client send a message on a particular chatroom
-# UID;send;targetUID;chatroomname;time;msg
-# for each targetUID in people in the chatroom
-
-import socket
-import selectors
-
-BUFSIZ = 4096
-
-selfIp = socket.gethostbyname(socket.gethostname())
-selfPort = 16384
-
-ip_table = { }
-req_table = { }
-
-#socketManager = selectors.DefaultSelector(  )
-listener = socket.socket( family = socket.AF_INET, type = socket.SOCK_STREAM )
-listener.bind((selfIp, selfPort))
-listener.settimeout(0.1)
-listener.listen()
-
-whitelisted_ips = ["106.201.123.139", "106.200.238.248", "49.207.201.183", "49.37.170.237", "49.207.201.250", "171.61.90.0", "49.207.223.177"]
+    def fileno(self):
+        return self.sock.fileno()
 
 
-listener.setblocking(False)
-
-socketManager = selectors.DefaultSelector()
-
-print('I am', (selfIp, selfPort))
-
-
-def acc(sock):
-    global ip_table, req_table
+def accept(sock):
     conn, addr = sock.accept()
-    if addr:
-        print("conn:", conn)
-        print("addr:", addr)
+    logger.write('Accepted connection from' + str(addr) + '\n')
     conn.setblocking(False)
-    socketManager.register(conn, selectors.EVENT_READ, read)
 
-def read(sock):
-    global ip_table, req_table
-    msg, addr = sock.recvfrom(BUFSIZ)
-    if msg or addr:
-        print('msg:', msg)
-        print('addr:', addr)
-    if msg and addr and (len(msg.decode().split(';'))) >= 2:
-        msg = (msg.decode()).split(';')
+    clientConn = myClient(conn)
+    socketmanager.register(clientConn, selectors.EVENT_READ, read)
 
-        sender = msg[0] # This is the UID of the sender
-        query = msg[1] # This is the actual query of the user
+def read(client):
+    msg = client.sock.recv(1024)
+    client.msg += msg
+    logger.write('recieved ' + msg.decode() + ' from ' + str(client.sock.getpeername()) + '\n')
 
-        # Add phone number to table
-        if(query == 'online'):
-            ip_table.setdefault(sender, sock)
-            print(ip_table)
+    if(b"\n" in msg):
+        if(client.msg == b"q\n"):
+            logger.write('Closing ' + str(client.sock.getpeername()) + '\n')
+            socketmanager.unregister(client)
+            client.sock.close()
+        else:
+            client.sendMsg()
 
-        # Remove phone number to table
-        elif(query == 'ofline'):
-            try:
-                ip_table.pop(sender)
-                sock.close()
-                print(ip_table)
-            except Exception as e:
-                print(ip_table)
+socketmanager = selectors.DefaultSelector()
 
-        # Create a chatroom with a certain name for a certain user
-        elif(query == 'create'):
+s = socket.socket()
+s.bind(("", 9999))
+s.listen()
+s.setblocking(False)
 
-            target = msg[2]
-            name = msg[3]
+socketmanager.register(s, selectors.EVENT_READ, accept)
 
-            UIDs = [sender]
-            for UID in msg[4:]: UIDs.append(UID)
-
-            if(req_table.get(target, None) is None):
-                req_table[target] = []
-            req_table[target].append(['create', name, UIDs])
-
-        # Remove a person from the chatroom of other people
-        elif(query == 'remove'):
-
-            target = msg[2]
-            name = msg[3]
-
-            if(req_table.get(target, None) is None):
-                req_table[target] = []
-            req_table[target].append(['remove', name, sender])
-
-        # Send a message to a person on a particular chatroom
-        elif(query == 'send'):
-
-            target = msg[2]
-            name = msg[3]
-
-            # data = msg[4]
-
-            data = msg[4:]
-            temp = ''
-            for elem in data: temp += elem + ';'
-            data = temp[:-1]
-
-            if(req_table.get(target, None) is None):
-                req_table[target] = []
-            req_table[target].append(['recv', name, sender, data])
-
-        elif(query == 'addper'):
-
-            target = msg[2]
-            name = msg[3]
-            toAdd = msg[4]
-
-            if(req_table.get(target, None) is None):
-                req_table[target] = []
-            req_table[target].append(['addper', name, toAdd])
-
-socketManager.register(listener, selectors.EVENT_READ, acc)
-
-def networking( ):
-    for key in req_table:
-        if(not (ip_table.get(key, None) is None)):
-            for query in req_table[key]:
-                print(query)
-                msg = query[0] + ';' + query[1] + ';'
-                if(query[0] == 'create'):
-                    for UID in query[2]:
-                        msg += UID + ';'
-                    msg = msg[:-1:]
-
-                elif(query[0] == 'remove'):
-                    msg += query[2]
-
-                elif(query[0] == 'recv'):
-                    msg += query[2] + ';' + query[3]
-
-                elif(query[0] == 'addper'):
-                    msg += query[2]
-
-                ip_table[key].sendall(msg.encode('utf8'))
-
-            req_table[key] = []
-
-    events = socketManager.select(timeout = 0.01)
-    for(key, mask) in events:
-        key.data(key.fileobj)
-
-
-while True: networking( )
+while True:
+    events = socketmanager.select(timeout=None)
+    for(key, mask) in events: key.data(key.fileobj)
