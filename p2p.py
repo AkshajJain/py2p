@@ -77,7 +77,7 @@ def read(sock):
     if addr:
         print('msg:', msg)
         print('addr:', addr)
-    if msg:
+    if msg and addr and (len(msg.decode().split(';'))) > 2:
         msg = (msg.decode()).split(';')
 
         sender = msg[0] # This is the UID of the sender
