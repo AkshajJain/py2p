@@ -68,8 +68,9 @@ def acc(sock):
 def read(sock):
     global ip_table, req_table
     msg, addr = sock.recvfrom(BUFSIZ)
-    print('msg:', msg)
-    print('addr:', addr)
+    if msg and addr:
+        print('msg:', msg)
+        print('addr:', addr)
     if msg and (len(msg.decode().split(';'))) >= 2:
         msg = (msg.decode()).split(';')
 
@@ -169,7 +170,7 @@ def networking( ):
 
     events = socketManager.select(timeout = 1)
     for(key, mask) in events:
-        print('i got something')
+        # print('i got something')
         key.data(key.fileobj)
 
 
